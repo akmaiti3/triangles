@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Triangle Inequality Explorer</title>
+<script>try{const theme=localStorage.getItem('triangle-inequality-theme');if(theme==='light'||theme==='dark')document.documentElement.dataset.theme=theme}catch{}</script>
 <style>
 :root{--bg:#f4f7fb;--card:#fff;--text:#0f1f3d;--muted:#5b6b86;--accent:#0f7c82;--navy:#0f1f3d;--ok:#16a34a;--bad:#dc2626;--line:#d8e0ee;--sa:#e11d48;--sb:#2563eb;--sc:#d97706;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -44,11 +45,19 @@ button.b:hover{border-color:var(--accent)}
 .bar i{position:absolute;top:0;bottom:0;left:0;display:flex;align-items:center;padding-left:8px;color:#fff;font-style:normal;font-size:.85rem;font-weight:700;transition:width .4s}
 .note{color:var(--muted);font-size:.9rem;margin-top:8px}
 .hidden{display:none}
+
+:root{color-scheme:light}:root[data-theme="dark"]{color-scheme:dark}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark}}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.theme-toggle{flex-shrink:0;display:grid;place-items:center;width:36px;height:36px;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--text);cursor:pointer}
+.theme-toggle:hover{border-color:var(--accent)}.theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.theme-toggle svg{width:18px;height:18px}.theme-toggle .sun{display:none}.theme-toggle[aria-pressed="true"] .sun{display:block}.theme-toggle[aria-pressed="true"] .moon{display:none}
+footer{margin-top:18px;text-align:right;color:var(--muted);font-size:.85rem;padding:8px 0}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Triangle <span>Inequality</span></h1>
+  <header class="page-header"><h1>Triangle <span>Inequality</span></h1><button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme" aria-pressed="false"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20.5 13A8.5 8.5 0 0 1 11 3.5 8.5 8.5 0 1 0 20.5 13Z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button></header>
   <p class="sub">Change the side lengths and watch the triangle build, collapse, or flatten.</p>
 
   <div class="tabs">
@@ -69,8 +78,8 @@ button.b:hover{border-color:var(--accent)}
     <div>
       <div class="card">
         <h2>Side lengths</h2>
-        <div class="row"><label><span class="dot" style="background:var(--sa)"></span>a</label><input type="range" id="ra" min="0.5" max="12" step="0.1"><input type="number" id="na" min="0.5" max="12" step="0.1"></div>
-        <div class="row"><label><span class="dot" style="background:var(--sb)"></span>b</label><input type="range" id="rb" min="0.5" max="12" step="0.1"><input type="number" id="nb" min="0.5" max="12" step="0.1"></div>
+        <div class="row"><label><span class="dot" style="background:var(--sa)"></span>a</label><input type="range" id="ra" min="0.5" max="15" step="0.1"><input type="number" id="na" min="0.5" max="15" step="0.1"></div>
+        <div class="row"><label><span class="dot" style="background:var(--sb)"></span>b</label><input type="range" id="rb" min="0.5" max="15" step="0.1"><input type="number" id="nb" min="0.5" max="15" step="0.1"></div>
         <div class="row"><label><span class="dot" style="background:var(--sc)"></span>c</label><input type="range" id="rc" min="0.5" max="24" step="0.1"><input type="number" id="nc" min="0.5" max="24" step="0.1"></div>
       </div>
 
@@ -88,9 +97,14 @@ button.b:hover{border-color:var(--accent)}
     <h2>The idea</h2>
     <p id="explain" style="margin:0"></p>
   </div>
+  <footer>@ Amit Maiti 2026</footer>
 </div>
 
 <script>
+const themeButton=document.getElementById('theme-toggle');const systemTheme=matchMedia('(prefers-color-scheme:dark)');
+function isDark(){return document.documentElement.dataset.theme?document.documentElement.dataset.theme==='dark':systemTheme.matches}
+function syncTheme(){const dark=isDark(),label='Switch to '+(dark?'light':'dark')+' mode';themeButton.setAttribute('aria-pressed',String(dark));themeButton.setAttribute('aria-label',label);themeButton.title=label}
+themeButton.addEventListener('click',()=>{const theme=isDark()?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('triangle-inequality-theme',theme)}catch{}syncTheme()});systemTheme.addEventListener('change',syncTheme);syncTheme();
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const S={a:5,b:4,c:6};let mode='tri';
 let disp={a:5,b:4,c:6}; // animated values
@@ -104,7 +118,7 @@ function sync(){
 }
 ['a','b','c'].forEach(k=>{
   $('r'+k).addEventListener('input',e=>{S[k]=+e.target.value;sync()});
-  $('n'+k).addEventListener('input',e=>{let v=parseFloat(e.target.value);if(isNaN(v))return;S[k]=Math.min(Math.max(v,0.5),k=='c'?24:12);$('r'+k).value=S[k];update()});
+  $('n'+k).addEventListener('input',e=>{let v=parseFloat(e.target.value);if(isNaN(v))return;S[k]=Math.min(Math.max(v,0.5),k=='c'?24:15);$('r'+k).value=S[k];update()});
 });
 
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
