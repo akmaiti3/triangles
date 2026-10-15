@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Triangle Inequality Explorer</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#0f1f3d;--muted:#5b6b86;--accent:#0f7c82;--navy:#0f1f3d;--ok:#16a34a;--bad:#dc2626;--line:#d8e0ee;--sa:#e11d48;--sb:#2563eb;--sc:#d97706;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1424;--card:#16203a;--text:#e8eefc;--muted:#9fb0d0;--accent:#2dd4bf;--navy:#e8eefc;--line:#2a3a5e;--sa:#fb7185;--sb:#60a5fa;--sc:#fbbf24}}
+:root[data-theme="dark"]{--bg:#0d1424;--card:#16203a;--text:#e8eefc;--muted:#9fb0d0;--accent:#2dd4bf;--navy:#e8eefc;--line:#2a3a5e;--sa:#fb7185;--sb:#60a5fa;--sc:#fbbf24}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
+.wrap{max-width:1000px;margin:0 auto;padding:18px}
+h1{font-size:clamp(1.6rem,5vw,2.4rem);margin:0 0 4px;letter-spacing:-.5px}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);margin:0 0 16px}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 16px;border-radius:999px;cursor:pointer;font-weight:600;font-size:.95rem}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.card h2{font-size:1rem;margin:0 0 10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.row{display:flex;align-items:center;gap:10px;margin:10px 0}
+.row label{width:70px;font-weight:700}
+.row input[type=range]{flex:1;accent-color:var(--accent)}
+.row input[type=number]{width:80px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:1rem}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+canvas{width:100%;height:auto;display:block;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.checks div{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:10px;margin:6px 0;background:var(--bg);border:1px solid var(--line);font-family:Georgia,serif;font-size:1.05rem;transition:.3s}
+.checks div.ok{border-color:var(--ok)}
+.checks div.bad{border-color:var(--bad);background:rgba(220,38,38,.1)}
+.badge{font-family:system-ui,sans-serif;font-size:.8rem;font-weight:700;padding:2px 10px;border-radius:999px;color:#fff}
+.ok .badge{background:var(--ok)}.bad .badge{background:var(--bad)}
+.verdict{margin-top:10px;padding:12px;border-radius:12px;font-weight:700;text-align:center;transition:.3s}
+.verdict.ok{background:rgba(22,163,74,.15);color:var(--ok)}
+.verdict.bad{background:rgba(220,38,38,.15);color:var(--bad)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button.b{border:1px solid var(--line);background:var(--bg);color:var(--text);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+button.b:hover{border-color:var(--accent)}
+.bar{position:relative;height:34px;margin:8px 0;border-radius:8px;overflow:hidden;background:var(--bg);border:1px solid var(--line)}
+.bar i{position:absolute;top:0;bottom:0;left:0;display:flex;align-items:center;padding-left:8px;color:#fff;font-style:normal;font-size:.85rem;font-weight:700;transition:width .4s}
+.note{color:var(--muted);font-size:.9rem;margin-top:8px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Triangle <span>Inequality</span></h1>
+  <p class="sub">Change the side lengths and watch the triangle build, collapse, or flatten.</p>
+
+  <div class="tabs">
+    <button class="tab active" data-m="tri">Triangle Inequality</button>
+    <button class="tab" data-m="rev">Reverse Triangle Inequality</button>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Visualization</h2>
+      <canvas id="cv" width="560" height="420"></canvas>
+      <div class="btns">
+        <button class="b" id="animBtn">▶ Animate side c</button>
+        <button class="b" id="resetBtn">Reset</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Side lengths</h2>
+        <div class="row"><label><span class="dot" style="background:var(--sa)"></span>a</label><input type="range" id="ra" min="0.5" max="12" step="0.1"><input type="number" id="na" min="0.5" max="12" step="0.1"></div>
+        <div class="row"><label><span class="dot" style="background:var(--sb)"></span>b</label><input type="range" id="rb" min="0.5" max="12" step="0.1"><input type="number" id="nb" min="0.5" max="12" step="0.1"></div>
+        <div class="row"><label><span class="dot" style="background:var(--sc)"></span>c</label><input type="range" id="rc" min="0.5" max="24" step="0.1"><input type="number" id="nc" min="0.5" max="24" step="0.1"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2 id="chkTitle">Conditions</h2>
+        <div class="checks" id="checks"></div>
+        <div class="verdict" id="verdict"></div>
+        <div id="barsBox"></div>
+        <div class="note" id="note"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>The idea</h2>
+    <p id="explain" style="margin:0"></p>
+  </div>
+</div>
+
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const S={a:5,b:4,c:6};let mode='tri';
+let disp={a:5,b:4,c:6}; // animated values
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const f=x=>(Math.round(x*100)/100).toString();
+
+function sync(){
+  ['a','b','c'].forEach(k=>{$('r'+k).value=S[k];$('n'+k).value=f(S[k]);});
+  update();
+}
+['a','b','c'].forEach(k=>{
+  $('r'+k).addEventListener('input',e=>{S[k]=+e.target.value;sync()});
+  $('n'+k).addEventListener('input',e=>{let v=parseFloat(e.target.value);if(isNaN(v))return;S[k]=Math.min(Math.max(v,0.5),k=='c'?24:12);$('r'+k).value=S[k];update()});
+});
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');mode=t.dataset.m;update();
+}));
+
+function update(){
+  const {a,b,c}=S;const eps=1e-9;
+  const box=$('checks');let rows,valid;
+  if(mode==='tri'){
+    $('chkTitle').textContent='Sum property: a + b > c';
+    rows=[[`a + b > c`,`${f(a)} + ${f(b)} = ${f(a+b)} vs ${f(c)}`,a+b>c+eps],
+          [`b + c > a`,`${f(b)} + ${f(c)} = ${f(b+c)} vs ${f(a)}`,b+c>a+eps],
+          [`c + a > b`,`${f(c)} + ${f(a)} = ${f(c+a)} vs ${f(b)}`,c+a>b+eps]];
+    $('explain').innerHTML='<b>Triangle inequality:</b> any side is shorter than the sum of the other two, because the straight path between two points is the shortest. Think of sides <b>a</b> and <b>b</b> as two rods hinged at C: they can only reach as far as <b>a + b</b>. If <b>c</b> is longer, the rods cannot meet and no triangle exists. If <b>c = a + b</b> the triangle is flat (degenerate).';
+  }else{
+    $('chkTitle').textContent='Difference property: |a − b| < c';
+    rows=[[`|a − b| < c`,`|${f(a)} − ${f(b)}| = ${f(Math.abs(a-b))} vs ${f(c)}`,Math.abs(a-b)<c-eps],
+          [`|b − c| < a`,`|${f(b)} − ${f(c)}| = ${f(Math.abs(b-c))} vs ${f(a)}`,Math.abs(b-c)<a-eps],
+          [`|c − a| < b`,`|${f(c)} − ${f(a)}| = ${f(Math.abs(c-a))} vs ${f(b)}`,Math.abs(c-a)<b-eps]];
+    $('explain').innerHTML='<b>Reverse triangle inequality:</b> |a − b| ≤ c. Rearranging a + c > b gives c > b − a, and b + c > a gives c > a − b, so <b>c</b> must exceed the <b>difference</b> of the other two sides. Visually, the shorter rod folded back on the longer one still leaves a gap of |a − b|, and c must be bigger than that gap. Combined: <b>|a − b| &lt; c &lt; a + b</b>.';
+  }
+  valid=(a+b>c+eps)&&(b+c>a+eps)&&(c+a>b+eps);
+  box.innerHTML=rows.map(r=>`<div class="${r[2]?'ok':'bad'}"><span>${r[0]} &nbsp;<small style="color:var(--muted)">${r[1]}</small></span><span class="badge">${r[2]?'TRUE':'FALSE'}</span></div>`).join('');
+  const v=$('verdict');
+  const all=rows.every(r=>r[2]);
+  const lo=Math.abs(a-b),hi=a+b;
+  const degenerate=Math.abs(c-hi)<1e-6||Math.abs(c-lo)<1e-6;
+  if(all){v.className='verdict ok';v.textContent='✓ A valid triangle exists';}
+  else if(degenerate){v.className='verdict bad';v.textContent='Degenerate: the triangle is flat (a straight line)';}
+  else{v.className='verdict bad';v.textContent='✗ No triangle possible with these sides';}
+  $('note').innerHTML=`Valid range for c: <b>${f(lo)}</b> &lt; c &lt; <b>${f(hi)}</b>`;
+  // bars
+  const max=Math.max(hi,c,1)*1.05;
+  if(mode==='tri'){
+    $('barsBox').innerHTML=`<div class="bar"><i style="width:${a/max*100}%;background:var(--sa)">a=${f(a)}</i><i style="left:${a/max*100}%;width:${b/max*100}%;background:var(--sb)">b=${f(b)}</i></div>
+    <div class="bar"><i style="width:${c/max*100}%;background:var(--sc)">c=${f(c)}</i></div>
+    <div class="note">Is the bottom bar shorter than the top (a + b) bar?</div>`;
+  }else{
+    const big=Math.max(a,b),small=Math.min(a,b);
+    $('barsBox').innerHTML=`<div class="bar"><i style="width:${big/max*100}%;background:${a>=b?'var(--sa)':'var(--sb)'}">${a>=b?'a':'b'}=${f(big)}</i></div>
+    <div class="bar"><i style="width:${small/max*100}%;background:${a>=b?'var(--sb)':'var(--sa)'}">${a>=b?'b':'a'}=${f(small)}</i><i style="left:${small/max*100}%;width:${lo/max*100}%;background:repeating-linear-gradient(45deg,#888,#888 4px,#666 4px,#666 8px)">gap=${f(lo)}</i></div>
+    <div class="bar"><i style="width:${c/max*100}%;background:var(--sc)">c=${f(c)}</i></div>
+    <div class="note">Is c longer than the gap |a − b|?</div>`;
+  }
+  start();
+}
+
+// animation loop: ease displayed values toward targets
+let raf=null,t0=0;
+function start(){if(!raf)raf=requestAnimationFrame(loop)}
+function loop(ts){
+  t0=ts;let moving=false;
+  ['a','b','c'].forEach(k=>{const d=S[k]-disp[k];if(Math.abs(d)>0.002){disp[k]+=d*0.15;moving=true}else disp[k]=S[k]});
+  draw(ts);
+  raf=(moving||sweeping||true)?requestAnimationFrame(loop):null;
+}
+
+function draw(ts){
+  const W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);
+  const {a,b,c}=disp;const eps=1e-6;
+  const cols={a:css('--sa'),b:css('--sb'),c:css('--sc')},txt=css('--text'),mut=css('--muted'),ok=css('--ok'),bad=css('--bad');
+  const reach=Math.max(a+b,c,Math.abs(a-b));
+  const sc=Math.min((W-120)/Math.max(c,a+b*0+1,c),(W-120)/Math.max(c,1));
+  // scale so base c and the arms fit
+  const scale=Math.min((W-110)/Math.max(c,1),(H*0.55)/Math.max(Math.max(a,b),1),(W-110)/Math.max(a+b,1)*1.0);
+  const s=Math.min(scale,(W-110)/Math.max(c,a+b)*1);
+  const k=s;
+  const x1=(W-c*k)/2,y1=H-70,x2=x1+c*k;
+  // base c (from B at x1 to C at x2 ; A apex). Sides: a = BC? Keep: c base, b from left P, a from right Q
+  // Left arm length b (from left point), right arm length a (from right point)
+  // Left circle radius b around left, right circle radius a around right
+  const feas=(a+b>=c-eps)&&(Math.abs(a-b)<=c+eps);
+  // apex: intersection
+  let ax,ay,valid=false;
+  const d=c;
+  const xx=(d*d+b*b-a*a)/(2*d);
+  const hh=b*b-xx*xx;
+  if(hh>=-1e-9){valid=true;ax=x1+xx*k;ay=y1-Math.sqrt(Math.max(hh,0))*k;}
+  // circles (dashed)
+  ctx.lineWidth=1.5;ctx.setLineDash([5,5]);
+  ctx.strokeStyle=cols.b+'88';ctx.beginPath();ctx.arc(x1,y1,b*k,Math.PI,2*Math.PI);ctx.stroke();
+  ctx.strokeStyle=cols.a+'88';ctx.beginPath();ctx.arc(x2,y1,a*k,Math.PI,2*Math.PI);ctx.stroke();
+  ctx.setLineDash([]);
+  // base
+  line(x1,y1,x2,y1,cols.c,5);
+  label('c = '+f(S.c),(x1+x2)/2,y1+26,cols.c);
+  const pulse=0.5+0.5*Math.sin(ts/250);
+  if(valid&&hh>1e-6){
+    // filled triangle
+    ctx.fillStyle=ok+'22';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(ax,ay);ctx.lineTo(x2,y1);ctx.closePath();ctx.fill();
+    line(x1,y1,ax,ay,cols.b,5);line(x2,y1,ax,ay,cols.a,5);
+    label('b = '+f(S.b),(x1+ax)/2-26,(y1+ay)/2-8,cols.b);
+    label('a = '+f(S.a),(x2+ax)/2+26,(y1+ay)/2-8,cols.a);
+    pt(ax,ay,txt);pt(x1,y1,txt);pt(x2,y1,txt);
+  }else if(valid){
+    // degenerate flat
+    const yy=y1-10;
+    line(x1,yy,ax,yy,cols.b,5);line(x2,yy-6,ax,yy-6,cols.a,5);
+    pt(ax,y1,bad);pt(x1,y1,txt);pt(x2,y1,txt);
+    label('flat!',(x1+x2)/2,y1-40,bad);
+  }else{
+    // impossible: arms drop toward each other, can't meet
+    const wob=pulse*6;
+    const ex1=x1+(b>=0?b*k:0), ex2=x2-a*k;
+    // draw arms along the base, in the direction toward each other, slightly raised
+    const gapCase=(a+b<c);
+    ctx.lineCap='round';
+    if(gapCase){
+      line(x1,y1-18-wob,x1+b*k,y1-18-wob,cols.b,5);
+      line(x2,y1-18-wob,x2-a*k,y1-18-wob,cols.a,5);
+      const gx1=x1+b*k,gx2=x2-a*k;
+      ctx.strokeStyle=bad;ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(gx1,y1-18-wob);ctx.lineTo(gx2,y1-18-wob);ctx.stroke();ctx.setLineDash([]);
+      label('gap = '+f(c-a-b),(gx1+gx2)/2,y1-38-wob,bad);
+      label('a + b too short',W/2,50,bad);
+    }else{
+      // one circle swallows the other: one arm too long
+      const big=a>b?'a':'b';
+      line(x1,y1-18-wob,x1+b*k,y1-18-wob,cols.b,5);
+      line(x2,y1-30-wob,x2-a*k,y1-30-wob,cols.a,5);
+      label(`${big} is longer than the other two combined`,W/2,50,bad);
+    }
+    pt(x1,y1,txt);pt(x2,y1,txt);
+  }
+  // legend
+  ctx.font='600 13px system-ui';ctx.textAlign='left';ctx.fillStyle=mut;
+  ctx.fillText(mode==='tri'?'dashed arcs: reach of b and a':'dashed arcs: where the apex must lie',12,22);
+  // reverse mode: show gap marker
+  if(mode==='rev'){
+    const lo=Math.abs(S.a-S.b);
+    ctx.fillStyle=mut;ctx.textAlign='left';
+    ctx.fillText('|a−b| = '+f(lo)+'  vs  c = '+f(S.c),12,42);
+  }
+}
+function line(x1,y1,x2,y2,col,w){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+function pt(x,y,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,6,0,7);ctx.fill()}
+function label(t,x,y,col){ctx.font='700 16px system-ui';ctx.textAlign='center';ctx.fillStyle=col;ctx.fillText(t,x,y)}
+
+// Animate c sweeping through its range
+let sweeping=false;
+$('animBtn').addEventListener('click',()=>{
+  if(sweeping){sweeping=false;$('animBtn').textContent='▶ Animate side c';return}
+  sweeping=true;$('animBtn').textContent='⏸ Stop';
+  const lo=Math.abs(S.a-S.b),hi=S.a+S.b;
+  const from=Math.max(0.5,lo-2),to=Math.min(24,hi+2);
+  let p=0,dir=1;
+  (function step(){
+    if(!sweeping)return;
+    p+=dir*0.004;if(p>=1){p=1;dir=-1}if(p<=0){p=0;dir=1}
+    const e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    S.c=from+(to-from)*e;disp.c=S.c;
+    $('rc').value=S.c;$('nc').value=f(S.c);update();
+    requestAnimationFrame(step);
+  })();
+});
+$('resetBtn').addEventListener('click',()=>{
+  sweeping=false;$('animBtn').textContent='▶ Animate side c';
+  S.a=5;S.b=4;S.c=6;sync();
+});
+
+sync();start();
+</script>
+</body>
+</html>
